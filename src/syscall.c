@@ -83,6 +83,63 @@ static const char *get_mode_str(uint32_t flags, uint32_t mode UNUSED)
     }
 }
 
+
+
+
+
+
+
+
+//static void syscall_write(struct riscv_t *rv)
+//{
+//    state_t *s = rv_userdata(rv); /* access userdata */
+
+    /* _write(fde, buffer, count) */
+//    riscv_word_t fd = rv_get_reg(rv, rv_reg_a0);
+//    riscv_word_t buffer = rv_get_reg(rv, rv_reg_a1);
+//    riscv_word_t count = rv_get_reg(rv, rv_reg_a2);
+
+    /* read the string that we are printing */
+//    uint8_t *tmp = malloc(count);
+//    memory_read(s->mem, tmp, buffer, count);
+
+    /* lookup the file descriptor */
+//    map_iter_t it;
+//    map_find(s->fd_map, &it, &fd);
+//    if (!map_at_end(s->fd_map, &it)) {
+        /* write out the data */
+//        size_t written = fwrite(tmp, 1, count, map_iter_value(&it, FILE *));
+
+        /* return number of bytes written */
+//        rv_set_reg(rv, rv_reg_a0, written);
+//    } else {
+        /* error */
+//        rv_set_reg(rv, rv_reg_a0, -1);
+//    }
+
+//    free(tmp);
+//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 static void syscall_write(struct riscv_t *rv)
 {
     state_t *s = rv_userdata(rv); /* access userdata */
@@ -92,6 +149,13 @@ static void syscall_write(struct riscv_t *rv)
     riscv_word_t buffer = rv_get_reg(rv, rv_reg_a1);
     riscv_word_t count = rv_get_reg(rv, rv_reg_a2);
 
+    /* If a0 is 0xfff, ecall will print integer*/
+    int flag = 0;
+    if (fd == 0xfff) {
+        fd = 1;
+        flag = 1;
+    }
+
     /* read the string that we are printing */
     uint8_t *tmp = malloc(count);
     memory_read(s->mem, tmp, buffer, count);
@@ -100,8 +164,12 @@ static void syscall_write(struct riscv_t *rv)
     map_iter_t it;
     map_find(s->fd_map, &it, &fd);
     if (!map_at_end(s->fd_map, &it)) {
-        /* write out the data */
-        size_t written = fwrite(tmp, 1, count, map_iter_value(&it, FILE *));
+        size_t written;
+        if (!flag)
+            /* write out the data */
+            written = fwrite(tmp, 1, count, map_iter_value(&it, FILE *));
+        else
+            written = fprintf(map_iter_value(&it, FILE *), "%d", *tmp);
 
         /* return number of bytes written */
         rv_set_reg(rv, rv_reg_a0, written);

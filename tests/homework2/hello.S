@@ -12,11 +12,6 @@
 str: .ascii "Hello World!\n"
      .set str_size, .-str
 
-
-my: .word 88
-    .set my_size, .-my
-
-
 .text
 _start:
     li t0, 0
@@ -32,9 +27,9 @@ loop:
     beq t0, t1, end
 
     li a7, SYSWRITE     # "write" syscall
-    li a0, 0xfff            # 1 = standard output (stdout)
-    la a1, my          # load address of hello string
-    li a2, 4     # length of hello string
+    li a0, 1            # 1 = standard output (stdout)
+    la a1, str          # load address of hello string
+    li a2, str_size     # length of hello string
     ecall               # invoke syscall to print the string
     addi t0, t0, 1
     j loop
